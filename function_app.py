@@ -157,7 +157,7 @@ def http2(req: func.HttpRequest) -> func.HttpResponse:
     }
     payload_json = json.dumps(payload)
 
-    app_insights_client.log_info("Staring Request")
+    app_insights_client.log_info("Starting Request")
 
     # Make outbound HTTP POST request using http.client
     try:
