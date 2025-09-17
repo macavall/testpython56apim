@@ -90,7 +90,7 @@ def cleanup_timer(timer: func.TimerRequest) -> None:
 def http2(req: func.HttpRequest) -> func.HttpResponse:
     invocation_id = req.invocation_id
 
-    logging.info(f"Python HTTP trigger function processed a request. {invocation_id}")
+    logging.info(f"Python HTTP trigger function processed a request." invocation_id=invocation_id)
 
     name = req.params.get('name')
     if not name:
@@ -108,7 +108,7 @@ def http2(req: func.HttpRequest) -> func.HttpResponse:
     }
     payload_json = json.dumps(payload)
 
-    logging.info(f"Starting Request {invocation_id}")
+    logging.info(f"Starting Request", invocation_id=invocation_id)
 
     # Make outbound HTTP POST request using http.client
     try:
@@ -135,7 +135,7 @@ def http2(req: func.HttpRequest) -> func.HttpResponse:
     except http.client.HTTPException as e:
         app_insights_client.log_error(f"Failed to send outbound POST request: {str(e)}")
 
-    logging.info(f"Completing Request {invocation_id}")
+    logging.info(f"Completing Request", invocation_id=invocation_id)
 
     if name:
         return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
