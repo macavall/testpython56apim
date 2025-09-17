@@ -7,59 +7,8 @@ import gc
 # import requests
 import http.client
 import urllib.parse
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from azure.monitor.opentelemetry.exporter import AzureMonitorTraceExporter
-from opentelemetry.trace import SpanKind
-
-# Configure OpenTelemetry for Application Insights
-connection_string = os.environ.get("APPLICATIONINSIGHTS_CONNECTION_STRING")
-if not connection_string:
-    raise ValueError("APPLICATIONINSIGHTS_CONNECTION_STRING is not set")
-
-# Initialize tracer provider
-trace.set_tracer_provider(TracerProvider())
-tracer = trace.get_tracer(__name__)
-
-# Configure Azure Monitor exporter
-exporter = AzureMonitorTraceExporter(connection_string=connection_string)
-trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(exporter))
-
-# Static Application Insights client for logging
-class AppInsightsClient:
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(AppInsightsClient, cls).__new__(cls)
-            cls._instance._initialize()
-        return cls._instance
-
-    def _initialize(self):
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
-
-    def log_info(self, message):
-        self.logger.info(message)
-        with tracer.start_as_current_span("trace", kind=SpanKind.INTERNAL) as span:
-            span.set_attribute("log.severity", "INFO")
-            span.set_attribute("log.message", message)
-
-    def log_warning(self, message):
-        self.logger.warning(message)
-        with tracer.start_as_current_span("trace", kind=SpanKind.INTERNAL) as span:
-            span.set_attribute("log.severity", "WARNING")
-            span.set_attribute("log.message", message)
-
-    def log_error(self, message):
-        self.logger.error(message)
-        with tracer.start_as_current_span("trace", kind=SpanKind.INTERNAL) as span:
-            span.set_attribute("log.severity", "ERROR")
-            span.set_attribute("log.message", message)
-
-# Initialize the static client
-app_insights_client = AppInsightsClient()
+from azure.monitor.opentelemetry import configure_azure_monitor 
+configure_azure_monitor()
 
 app = func.FunctionApp()
 
@@ -139,7 +88,9 @@ def cleanup_timer(timer: func.TimerRequest) -> None:
 
 @app.route(route="http2", auth_level=func.AuthLevel.ANONYMOUS)
 def http2(req: func.HttpRequest) -> func.HttpResponse:
-    app_insights_client.log_info('Python HTTP trigger function processed a request.')
+    invocation_id = req.invocation_id
+
+    logging.info(f"Python HTTP trigger function processed a request. {invocation_id}")
 
     name = req.params.get('name')
     if not name:
@@ -157,7 +108,7 @@ def http2(req: func.HttpRequest) -> func.HttpResponse:
     }
     payload_json = json.dumps(payload)
 
-    app_insights_client.log_info("Starting Request")
+    logging.info(f"Starting Request {invocation_id}")
 
     # Make outbound HTTP POST request using http.client
     try:
@@ -177,14 +128,14 @@ def http2(req: func.HttpRequest) -> func.HttpResponse:
         # Get response
         response = conn.getresponse()
         status_code = response.status
-        app_insights_client.log_info(status_code)
+        logging.info(status_code)
         conn.close()
         
-        app_insights_client.log_info(f"Outbound POST request sent. Status code: {status_code}")
+        logging.info(f"Outbound POST request sent. Status code: {status_code}")
     except http.client.HTTPException as e:
         app_insights_client.log_error(f"Failed to send outbound POST request: {str(e)}")
 
-    app_insights_client.log_info("Completing Request")
+    logging.info(f"Completing Request {invocation_id}")
 
     if name:
         return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
