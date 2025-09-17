@@ -139,7 +139,7 @@ def cleanup_timer(timer: func.TimerRequest) -> None:
 
 @app.route(route="http2", auth_level=func.AuthLevel.ANONYMOUS)
 def http2(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
+    app_insights_client.log_info('Python HTTP trigger function processed a request.')
 
     name = req.params.get('name')
     if not name:
@@ -180,9 +180,9 @@ def http2(req: func.HttpRequest) -> func.HttpResponse:
         app_insights_client.log_info(status_code)
         conn.close()
         
-        logging.info(f"Outbound POST request sent. Status code: {status_code}")
+        app_insights_client.log_info(f"Outbound POST request sent. Status code: {status_code}")
     except http.client.HTTPException as e:
-        logging.error(f"Failed to send outbound POST request: {str(e)}")
+        app_insights_client.log_error(f"Failed to send outbound POST request: {str(e)}")
 
     app_insights_client.log_info("Completing Request")
 
