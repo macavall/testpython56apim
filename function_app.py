@@ -43,7 +43,7 @@ def http1(req: func.HttpRequest) -> func.HttpResponse:
     # Make outbound HTTP POST request using http.client
     try:
         # Parse the URL
-        parsed_url = urllib.parse.urlparse("https://httpbin.org/post")
+        parsed_url = urllib.parse.urlparse("https://testpython56apim.azure-api.net/testpythonfa5602fa/http1")
         conn = http.client.HTTPSConnection(parsed_url.netloc, timeout=5)
         
         # Set headers
