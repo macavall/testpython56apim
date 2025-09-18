@@ -15,9 +15,12 @@ app = func.FunctionApp()
 # Static array to store data (class-level variable)
 
 
-@app.route(route="http1", auth_level=func.AuthLevel.ANONYMOUS)
+@app.route(route="http1/{guid_value:guid?}", auth_level=func.AuthLevel.ANONYMOUS)
 def http1(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
+    
+    guid_value = req.route_params.get('guid_value')
+    logging.info(guid_value)
 
     static_data = bytearray()
 
@@ -25,7 +28,7 @@ def http1(req: func.HttpRequest) -> func.HttpResponse:
     ONE_MB = 1024 * 1024  # 1MB in bytes
     static_data.extend(os.urandom(ONE_MB))
     # array_size = len(DataStore.static_data)
-    logging.info(f"Added 1MB to static array. Current size: {len(DataStore.static_data)} bytes")
+    # logging.info(f"Added 1MB to static array. Current size: {len(static_data)} bytes")
 
     name = req.params.get('name')
     if not name:
