@@ -14,8 +14,8 @@ configure_azure_monitor()
 app = func.FunctionApp()
 
 # Static array to store data (class-level variable)
-class DataStore:
-    static_data = bytearray()
+# class DataStore:
+#     static_data = bytearray()
 
 @app.route(route="http1/{guid_value:guid?}", auth_level=func.AuthLevel.ANONYMOUS)
 def http1(req: func.HttpRequest) -> func.HttpResponse:
@@ -25,8 +25,8 @@ def http1(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(guid_value)
 
     # Add 1MB of random data to static array
-    ONE_MB = 1024 * 1024  # 1MB in bytes
-    DataStore.static_data.extend(os.urandom(ONE_MB))
+    # ONE_MB = 1024 * 1024  # 1MB in bytes
+    # DataStore.static_data.extend(os.urandom(ONE_MB))
     # array_size = len(DataStore.static_data)
     # logging.info(f"Added 1MB to static array. Current size: {len(static_data)} bytes")
 
@@ -64,8 +64,10 @@ def http2(req: func.HttpRequest, context) -> func.HttpResponse:
 
     # Get the invocation ID from the request headers
     invocation_id = context.invocation_id 
+    log_extra = {"custom_dimensions": {"InvocationId": invocation_id}}
     # req.headers.get('x-ms-invocation-id')
-    logging.info(f'INVOCATION ID: {invocation_id}')
+    # logging.info(f'INVOCATION ID: {invocation_id}')
+    logging.info(f'INVOCATION ID: {invocation_id}', extra=log_extra)
     
     logging.info('Python HTTP trigger function processed a request.')
 
@@ -93,6 +95,7 @@ def http2(req: func.HttpRequest, context) -> func.HttpResponse:
     try:
         # Parse the URL
         random_guid = str(uuid.uuid4())
+        logging.info(random_guid)
         parsed_url = urllib.parse.urlparse("https://testpython56apim.azure-api.net/testpythonfa5602fa/http1/" + random_guid)
         conn = http.client.HTTPSConnection(parsed_url.netloc, timeout=5)
         
