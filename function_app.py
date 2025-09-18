@@ -87,10 +87,14 @@ def cleanup_timer(timer: func.TimerRequest) -> None:
     logging.info('Static array cleared and garbage collection triggered.')
 
 @app.route(route="http2", auth_level=func.AuthLevel.ANONYMOUS)
-def http2(req: func.HttpRequest) -> func.HttpResponse:
-    invocation_id = req.invocation_id
+def http2(req: func.HttpRequest, context) -> func.HttpResponse:
 
-    logging.info(f"Python HTTP trigger function processed a request." invocation_id=invocation_id)
+    # Get the invocation ID from the request headers
+    invocation_id = context.invocation_id 
+    # req.headers.get('x-ms-invocation-id')
+    logging.info(f'INVOCATION ID: {invocation_id}')
+    
+    logging.info('Python HTTP trigger function processed a request.')
 
     name = req.params.get('name')
     if not name:
@@ -108,7 +112,7 @@ def http2(req: func.HttpRequest) -> func.HttpResponse:
     }
     payload_json = json.dumps(payload)
 
-    logging.info(f"Starting Request", invocation_id=invocation_id)
+    logging.info(f"Starting Request {invocation_id}")
 
     # Make outbound HTTP POST request using http.client
     try:
@@ -133,9 +137,9 @@ def http2(req: func.HttpRequest) -> func.HttpResponse:
         
         logging.info(f"Outbound POST request sent. Status code: {status_code}")
     except http.client.HTTPException as e:
-        app_insights_client.log_error(f"Failed to send outbound POST request: {str(e)}")
+        logging.error(f"Failed to send outbound POST request: {str(e)}")
 
-    logging.info(f"Completing Request", invocation_id=invocation_id)
+    logging.info(f"Completing Request {invocation_id}")
 
     if name:
         return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
