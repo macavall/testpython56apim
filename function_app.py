@@ -13,22 +13,12 @@ configure_azure_monitor()
 
 app = func.FunctionApp()
 
-# Static array to store data (class-level variable)
-# class DataStore:
-#     static_data = bytearray()
-
 @app.route(route="http1/{guid_value:guid?}", auth_level=func.AuthLevel.ANONYMOUS)
 def http1(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
     
     guid_value = req.route_params.get('guid_value')
     logging.info(guid_value)
-
-    # Add 1MB of random data to static array
-    # ONE_MB = 1024 * 1024  # 1MB in bytes
-    # DataStore.static_data.extend(os.urandom(ONE_MB))
-    # array_size = len(DataStore.static_data)
-    # logging.info(f"Added 1MB to static array. Current size: {len(static_data)} bytes")
 
     name = req.params.get('name')
     if not name:
@@ -46,18 +36,6 @@ def http1(req: func.HttpRequest) -> func.HttpResponse:
              "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
              status_code=200
         )
-    
-
-# ================================================
-# ================================================
-
-# @app.timer_trigger(schedule="0 * * * * *", arg_name="timer", run_on_startup=False, use_monitor=False)
-# def cleanup_timer(timer: func.TimerRequest) -> None:
-#     logging.info('Timer trigger function executed for cleanup.')
-#     # Clear the bytearray and force garbage collection
-#     DataStore.static_data.clear()
-#     gc.collect()
-#     logging.info('Static array cleared and garbage collection triggered.')
 
 @app.route(route="http2", auth_level=func.AuthLevel.ANONYMOUS)
 def http2(req: func.HttpRequest, context) -> func.HttpResponse:
@@ -86,9 +64,7 @@ def http2(req: func.HttpRequest, context) -> func.HttpResponse:
     payload_json = json.dumps(payload)
 
     logging.info(f"Starting Request {invocation_id}")
-
-
-
+    
     # Make outbound HTTP POST request using http.client
     try:
         # Parse the URL
