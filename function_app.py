@@ -13,7 +13,8 @@ configure_azure_monitor()
 app = func.FunctionApp()
 
 # Static array to store data (class-level variable)
-
+class DataStore:
+    static_data = bytearray()
 
 @app.route(route="http1/{guid_value:guid?}", auth_level=func.AuthLevel.ANONYMOUS)
 def http1(req: func.HttpRequest) -> func.HttpResponse:
@@ -22,11 +23,9 @@ def http1(req: func.HttpRequest) -> func.HttpResponse:
     guid_value = req.route_params.get('guid_value')
     logging.info(guid_value)
 
-    static_data = bytearray()
-
     # Add 1MB of random data to static array
     ONE_MB = 1024 * 1024  # 1MB in bytes
-    static_data.extend(os.urandom(ONE_MB))
+    DataStore.static_data.extend(os.urandom(ONE_MB))
     # array_size = len(DataStore.static_data)
     # logging.info(f"Added 1MB to static array. Current size: {len(static_data)} bytes")
 
