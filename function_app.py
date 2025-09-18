@@ -65,8 +65,6 @@ def http2(req: func.HttpRequest, context) -> func.HttpResponse:
     # Get the invocation ID from the request headers
     invocation_id = context.invocation_id 
     log_extra = {"custom_dimensions": {"InvocationId": invocation_id}}
-    # req.headers.get('x-ms-invocation-id')
-    # logging.info(f'INVOCATION ID: {invocation_id}')
     logging.info(f'INVOCATION ID: {invocation_id}', extra=log_extra)
     
     logging.info('Python HTTP trigger function processed a request.')
